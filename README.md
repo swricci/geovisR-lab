@@ -1,2 +1,2 @@
-# geovis-lab-project
+# geovisR-lab
 materials for geovisualization student-led lab
