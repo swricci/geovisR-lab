@@ -2,7 +2,10 @@
 title: "ggplot(ly) lab"
 author: "Shannon Ricci"
 date: "4/8/2019"
-output: html_document
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
 ---
 
 The goal of this lab is to explore and visualize wildfire trend data using ggplot, plotly, and shiny. Parts of this lab are based on this [Jul. 28, 2018 BuzzFeed News post on wildfires](https://www.buzzfeednews.com/article/peteraldhous/california-wildfires-people-climate). The code and data to make the plots can be found in [this GitHub repository](https://github.com/BuzzFeedNews/2018-07-wildfire-trends).
@@ -10,7 +13,7 @@ The goal of this lab is to explore and visualize wildfire trend data using ggplo
 We recommend using an RStudio Project (File -> New Project... -> New Directory) and create a folder that data and scripts can live.
 
 Prior to the lab session please install required packages (see code below), download the data sets, and setup your working directory or RStudio Project.
-```{r packages}
+```{r packages , eval = F}
 # install.packages("ggplot2")
 # install.packages("dplyr")
 # install.packages("readr")
@@ -29,17 +32,17 @@ library(plotly)
 ##Part I: Data visualization with ggplot2
 To explore the functionality of ggplot, we will use the included diamonds data set. First, look at the structure of the data to see what types of variables we are working with.
 
-```{r}
+```{r , eval = F}
 str(diamonds)
 ```
 
 How would we make a scatterplot using base plot?
-```{r}
+```{r , eval = F}
 plot(diamonds$carat,diamonds$price)
 ```
 
 And in ggplot:
-```{r}
+```{r , eval = F}
 ggplot(data=diamonds) + 
   geom_point(aes(x = carat, y = price))
 ```
@@ -48,26 +51,26 @@ This simple plot has the diamonds dataset in the data layer, and carat and price
 
 These plots are both pretty ugly - there is a lot of overplotting, and we may be able to take advantage of another channel (color) to explore another aspect of this dataset. Here is where ggplot quickly becomes more intuitive and prettier than base plotting. To illustrate this, add clarity to the color and jitter points. For ggplot, mappings added within aes will create a legend, those outside the aes() will not.
 
-```{r}
+```{r , eval = F}
 ggplot(data = diamonds) + 
   geom_point(aes(x = carat, y = price, color = clarity), alpha = 0.3, position = "jitter")
 ```
 Much better!
 
 But if we try base plotting:
-```{r}
+```{r , eval = F}
 plot(jitter(diamonds$carat),diamonds$price, col=diamonds$clarity, pch = 19)
 ```
 
 The function I have found most useful in ggplot is the facet layer. Using facet_wrap to make subplots of the dataset for different cut types. Use nrow or ncol within facet_wrap to set how many rows/columns the subplots should break into.
-```{r}
+```{r , eval = F}
 ggplot(data = diamonds) + 
   geom_point(aes(x = carat, y = price, color = clarity), alpha = 0.3, position = "jitter")+
   facet_wrap(.~cut)
 ```
 
 Now add a statistics layer by adding a smoothed line to better see the pattern in the dataset. Change the theme by adding a theme layer.
-```{r}
+```{r , eval = F}
 ggplot(data = diamonds, aes(x = carat, y = price)) + 
   geom_point(aes(color = clarity), alpha = 0.3, position = "jitter")+
   geom_smooth()+
@@ -88,7 +91,7 @@ Note that x = carat and y = price moved up into the ggplot() call. This means th
 
 ##Part III: Exploring trends in wildfires
 Next, we will load and filter the data provided by Buzzfeed. This data preparation section will be used in other parts of the lab (plotly, shiny).  
-```{r data.prep}
+```{r data.prep , eval = F}
 files <- list.files("data/us_fires") #change path if not working in project or directory with data folder
 
 us_fires <- data_frame()
@@ -131,14 +134,14 @@ Note: status bar may only pop up for a few of the files, but all files should ha
 For the remainder of the lab we will be working with the se_fires data set.
 
 Construct a bar chart showing the proportion of different fire causes and store as a ggplot object.
-```{r}
+```{r , eval =F}
 barplot<-ggplot(se_fires)+
   geom_bar(aes(x=state,fill=stat_cause_descr),position = "fill")+
   theme_classic()
 ```
 
 Construct a bubble plot (like the one from the original Buzzfeed article). Even with the reduced SE dataset the plot will take some time to run and render (~1 min).
-```{r}
+```{r , eval = F}
 plot_template_se <- ggplot(se_fires, aes(y=as.numeric(fire_year))) +
   geom_hline(yintercept = seq(1992, 2015, by = 1), color = "gray", size = 0.05) +
   scale_size_area(max_size = 10, guide = FALSE) +
@@ -153,13 +156,13 @@ se_bubble<- plot_template_se +
 ```
 
 Facet wrap by state:
-```{r}
+```{r , eval = F}
 se_bubble +
   facet_wrap(.~state)
 ```
 
 Summarize data and add some variables to plot time series.
-```{r}
+```{r , eval = F}
 #add new column fire_month
 se_fires <- se_fires %>% mutate(fire_month = month(date))
 
@@ -173,13 +176,13 @@ se_fires_month <- mutate(se_fires_month, mdate = make_date(fire_year,fire_month)
 ```
 
 Fire size time series:
-```{r}
+```{r , eval = F}
 time_series_area<- ggplot(data = se_fires_month, aes (x = mdate))+
   geom_line(aes(y = area, col = state))
 ```
 
 Fire count time series:
-```{r}
+```{r , eval = F}
 time_series_firecount <- ggplot(data = se_fires_month, aes (x = mdate))+
   geom_line(aes(y = n_fires, col = state))
 ```
