@@ -107,3 +107,164 @@ treemap<-ggplot(se.fires.summary,aes(area=count,fill=stat_cause_descr,label=stat
   geom_treemap_text( colour = "white", place = "centre")+
   facet_wrap(.~state)
 
+##Nikki stuff below!!!
+#Install and load plotly
+
+library(plotly)
+
+
+#California fires
+
+ca_fires<-filter(us_fires, state=="CA" & fire_size>1000)
+
+plot_template_ca <- ggplot(ca_fires, aes(y=as.numeric(fire_year))) +
+  geom_hline(yintercept = seq(1992, 2015, by = 1), color = "gray", size = 0.05) +
+  scale_size_area(max_size = 10, guide = FALSE) +
+  scale_x_date(date_breaks = "months", date_labels = "%b") +
+  scale_y_reverse(limits = c(2015,1992), breaks = c(2010,2005,2000,1995)) +
+  xlab("") +
+  ylab("") 
+
+ca_bubble<- plot_template_ca +
+  geom_point(aes(size = fire_size, x = plot_date, color = cause),alpha=0.7)
+
+
+
+ca_bubble +
+  facet_wrap(.~cause)
+
+
+ggplotly(ca_bubble)
+
+
+
+## Cool, let's customize the hover text
+## To do that, we need to add a text aesthetic to the ggplot object. It recognizes html line breaks to make your labels look awesome! 
+
+ca_bubble2 <- plot_template_ca +
+  geom_point(aes(size = fire_size, x = plot_date, color = cause, group = 1, text=paste('Name:', mtbs_fire_name, '<br>Cause:', cause)), alpha=0.7)
+
+ggplotly(ca_bubble2, tooltip = "text")
+
+
+#Add discover and control dates (or anything else you think is interesting) to labels on your own. If you want to be really fancy, calculate fire duration and add that to hover text! (HINT: difftime() function )
+
+
+ca_fires$duration_days<-difftime(ca_fires$cont_date, ca_fires$discovery_date, units="days")
+
+plot_template_ca <- ggplot(ca_fires, aes(y=as.numeric(fire_year))) +
+  geom_hline(yintercept = seq(1992, 2015, by = 1), color = "gray", size = 0.05) +
+  scale_size_area(max_size = 10, guide = FALSE) +
+  scale_x_date(date_breaks = "months", date_labels = "%b") +
+  scale_y_reverse(limits = c(2015,1992), breaks = c(2010,2005,2000,1995)) +
+  xlab("") +
+  ylab("") 
+
+ca_bubble3 <- plot_template_ca +
+  geom_point(aes(size = fire_size, x = plot_date, color = cause, group = 1, text=paste('Name:', mtbs_fire_name, '<br>Cause:', cause, '<br>Duration:', duration_days, "days")), alpha=0.7)
+
+g<-ggplotly(ca_bubble3, tooltip = "text")
+
+#Let's add a range slider
+
+g %>%
+  rangeslider()
+
+## That's kind of terrible for this type of graph - when might it be useful?
+
+##Animation
+#Plotly acccount - get your api settings
+#Set them in your R environment
+Sys.setenv("plotly_username"="ncinglis")
+Sys.setenv("plotly_api_key"="RoIIfvlshFSZGNjeXZ5H")
+
+
+
+##Use unoffical "frame" aesthetic in ggplotly
+
+plot_template_ca <- ggplot(ca_fires, aes(y=as.numeric(fire_year))) +
+  geom_hline(yintercept = seq(1992, 2015, by = 1), color = "gray", size = 0.05) +
+  scale_size_area(max_size = 10, guide = FALSE) +
+  scale_x_date(date_breaks = "months", date_labels = "%b") +
+  scale_y_reverse(limits = c(2015,1992), breaks = c(2010,2005,2000,1995)) +
+  xlab(month(ca_fires$plot_date)) +
+  ylab("") 
+
+
+ca_bubble4 <- plot_template_ca +
+  geom_point(aes(frame=as.numeric(fire_year), size = fire_size, x = plot_date, color = cause, group = 1, 
+                 text=paste('Name:', mtbs_fire_name, '<br>Cause:', cause, '<br>Duration:', duration_days, 'days')),
+             alpha=0.7)
+
+g<-ggplotly(ca_bubble4, tooltip = "text")
+
+
+a<- g %>%
+  animation_opts(1000, transition=500, easing="linear")
+chart_link = api_create(a, filename="plotly-lab-an")
+chart_link
+
+
+#Try on your own: animate by month (use month() to extract month from date field) or cause, play with some of the other options in opts and in animationslider() and animationbutton()
+
+ca_bubble5 <- plot_template_ca +
+  geom_point(aes(frame=cause, size = fire_size, x = plot_date, color = cause, group = 1, 
+                 text=paste('Name:', mtbs_fire_name, '<br>Cause:', cause, '<br>Duration:', duration_days, 'days')),
+             alpha=0.7)
+
+g<-ggplotly(ca_bubble5, tooltip = "text")
+
+
+a<- g %>%
+  animation_opts(frame=2000, transition=500, easing="elastic", mode="next")
+chart_link = api_create(a, filename="plotly-lab-an")
+chart_link
+
+
+
+###Linking views with facet wrap 
+f<- ca_bubble3 +
+  facet_wrap(.~cause)
+
+ggplotly(f, tooltip="text")
+
+#Linking with highlighting 
+#Hightlight the dataset, then remake the ggplots with that dataset
+
+
+n <- highlight_key(ca_fires, ~cause)
+
+p1 <- ggplot(n, aes(x=plot_date, fill = cause)) + 
+  geom_density(alpha=0.7, colour=NA) +
+  scale_x_date(date_breaks = "months", date_labels = "%b") +
+  scale_y_continuous(position = "right")
+
+plot_template_highlight <- ggplot(n, aes(y=as.numeric(fire_year))) +
+  geom_hline(yintercept = seq(1992, 2015, by = 1), color = "gray", size = 0.05) +
+  scale_size_area(max_size = 10, guide = FALSE) +
+  scale_x_date(date_breaks = "months", date_labels = "%b") +
+  scale_y_reverse(limits = c(2015,1992), breaks = c(2010,2005,2000,1995)) +
+  xlab(month(ca_fires$plot_date)) +
+  ylab("") 
+
+
+p2 <- plot_template_highlight +
+  geom_point(aes(size = fire_size, x = plot_date, color = cause, group = 1, 
+                 text=paste('Name:', mtbs_fire_name, '<br>Cause:', cause, '<br>Duration:', duration_days, 'days')),
+             alpha=0.7)
+
+
+
+
+subplot(p2, p1) %>% hide_legend() %>% highlight("plotly_click")
+
+
+##Task: Link a 3rd chart: A line chart of fire area over time. OR, change the highlight key to year. 
+
+
+
+#SHINY >> Kimia - This linked plot OR ca_bubble3 for Shiny app if you want! 
+
+nikki_finalplot<-subplot(p2, p1) %>% hide_legend() %>% highlight("plotly_click")
+ca_bubble3
+
