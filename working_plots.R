@@ -117,6 +117,11 @@ library(plotly)
 
 ca_fires<-filter(us_fires, state=="CA" & fire_size>1000)
 
+#add column called plot_date to help with plotting the data
+ca_fires<-ca_fires %>%
+  mutate(plot_date = as.Date(format(date,"2017-%m-%d"))) #this gives you the data frame we worked with!
+
+
 plot_template_ca <- ggplot(ca_fires, aes(y=as.numeric(fire_year))) +
   geom_hline(yintercept = seq(1992, 2015, by = 1), color = "gray", size = 0.05) +
   scale_size_area(max_size = 10, guide = FALSE) +
@@ -147,7 +152,8 @@ ca_bubble2 <- plot_template_ca +
 ggplotly(ca_bubble2, tooltip = "text")
 
 
-#Add discover and control dates (or anything else you think is interesting) to labels on your own. If you want to be really fancy, calculate fire duration and add that to hover text! (HINT: difftime() function )
+#Add discover and control dates (or anything else you think is interesting) to labels on your own.
+#If you want to be really fancy, calculate fire duration and add that to hover text! (HINT: difftime() function )
 
 
 ca_fires$duration_days<-difftime(ca_fires$cont_date, ca_fires$discovery_date, units="days")
@@ -205,7 +211,8 @@ chart_link = api_create(a, filename="plotly-lab-an")
 chart_link
 
 
-#Try on your own: animate by month (use month() to extract month from date field) or cause, play with some of the other options in opts and in animationslider() and animationbutton()
+#Try on your own: animate by month (use month() to extract month from date field) or cause, 
+#play with some of the other options in opts and in animationslider() and animationbutton()
 
 ca_bubble5 <- plot_template_ca +
   geom_point(aes(frame=cause, size = fire_size, x = plot_date, color = cause, group = 1, 
