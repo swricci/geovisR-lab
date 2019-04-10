@@ -1,11 +1,11 @@
 ---
 title: "ggplot(ly) lab"
-author: "Shannon Ricci"
+author: "Shannon Ricci & Nikki Inglis"
 date: "4/8/2019"
 output:
-  pdf_document: default
-  word_document: default
   html_document: default
+  word_document: default
+  pdf_document: default
 ---
 
 The goal of this lab is to explore and visualize wildfire trend data using ggplot, plotly, and shiny. Parts of this lab are based on this [Jul. 28, 2018 BuzzFeed News post on wildfires](https://www.buzzfeednews.com/article/peteraldhous/california-wildfires-people-climate). The code and data to make the plots can be found in [this GitHub repository](https://github.com/BuzzFeedNews/2018-07-wildfire-trends).
@@ -13,7 +13,7 @@ The goal of this lab is to explore and visualize wildfire trend data using ggplo
 We recommend using an RStudio Project (File -> New Project... -> New Directory) and create a folder that data and scripts can live.
 
 Prior to the lab session please install required packages (see code below), download the data sets, and setup your working directory or RStudio Project.
-```{r packages , eval = F}
+```{r packages , message = F}
 # install.packages("ggplot2")
 # install.packages("dplyr")
 # install.packages("readr")
@@ -30,7 +30,9 @@ library(plotly)
 ```
 
 ##Part I: Data visualization with ggplot2
-To explore the functionality of ggplot, we will use the included diamonds data set. First, look at the structure of the data to see what types of variables we are working with.
+
+####Base plot vs. ggplot
+To explore the functionality of ggplot, we will use the included diamonds data set and compare simple plots made with base plotting and ggplot. First, look at the structure of the data to see what types of variables we are working with.
 
 ```{r , eval = F}
 str(diamonds)
@@ -51,17 +53,21 @@ This simple plot has the diamonds dataset in the data layer, and carat and price
 
 These plots are both pretty ugly - there is a lot of overplotting, and we may be able to take advantage of another channel (color) to explore another aspect of this dataset. Here is where ggplot quickly becomes more intuitive and prettier than base plotting. To illustrate this, add clarity to the color and jitter points. For ggplot, mappings added within aes will create a legend, those outside the aes() will not.
 
-```{r , eval = F}
+```{r}
 ggplot(data = diamonds) + 
   geom_point(aes(x = carat, y = price, color = clarity), alpha = 0.3, position = "jitter")
 ```
 Much better!
 
 But if we try base plotting:
-```{r , eval = F}
+```{r}
 plot(jitter(diamonds$carat),diamonds$price, col=diamonds$clarity, pch = 19)
 ```
+...Gross.
 
+***
+
+####ggplot layers (geoms, facets, stats, etc.)
 The function I have found most useful in ggplot is the facet layer. Using facet_wrap to make subplots of the dataset for different cut types. Use nrow or ncol within facet_wrap to set how many rows/columns the subplots should break into.
 ```{r , eval = F}
 ggplot(data = diamonds) + 
