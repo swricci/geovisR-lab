@@ -39,12 +39,13 @@ str(diamonds)
 ```
 
 How would we make a scatterplot using base plot?
-```{r , eval = F}
+```{r}
 plot(diamonds$carat,diamonds$price)
 ```
 
+
 And in ggplot:
-```{r , eval = F}
+```{r}
 ggplot(data=diamonds) + 
   geom_point(aes(x = carat, y = price))
 ```
@@ -57,12 +58,14 @@ These plots are both pretty ugly - there is a lot of overplotting, and we may be
 ggplot(data = diamonds) + 
   geom_point(aes(x = carat, y = price, color = clarity), alpha = 0.3, position = "jitter")
 ```
+
 Much better!
 
 But if we try base plotting:
 ```{r}
 plot(jitter(diamonds$carat),diamonds$price, col=diamonds$clarity, pch = 19)
 ```
+
 ...Gross.
 
 ***
@@ -76,7 +79,7 @@ ggplot(data = diamonds) +
 ```
 
 Now add a statistics layer by adding a smoothed line to better see the pattern in the dataset. Change the theme by adding a theme layer.
-```{r , eval = F}
+```{r}
 ggplot(data = diamonds, aes(x = carat, y = price)) + 
   geom_point(aes(color = clarity), alpha = 0.3, position = "jitter")+
   geom_smooth()+
@@ -89,7 +92,9 @@ ggplot(data = diamonds, aes(x = carat, y = price)) +
   )
 
 ```
+
 Note that x = carat and y = price moved up into the ggplot() call. This means that those aesthetics will be used in any other functions called (in this case geom_point and geom_smooth).
+
 
 ##Part II: plotly in R - ggplotly!
 
@@ -126,12 +131,11 @@ us_fires <- us_fires %>%
          date = as.Date(case_when(is.na(discovery_date) ~ cont_date,
                                   !is.na(discovery_date) ~ discovery_date)))
 
-#KIM: USE ONLY DATA FROM THE SE US STATES...use code below to get se_fires data that we used for the figures
-#filter data to just the Southeast US states
-se_fires<-filter(us_fires, state=="AL" | state == "AR" | state=="FL" | state=="GA" | state == "KY" | state == "LA" | state == "MS" | state=="NC" | state=="SC" | state == "TN" | state == "VA" | state == "WV")
+#filter data to just California
+ca_fires<-filter(us_fires, state == "CA")
 
 #add column called plot_date to help with plotting the data
-se_fires<-se_fires %>%
+ca_fires<-ca_fires %>%
   mutate(plot_date = as.Date(format(date,"2017-%m-%d")))
 ```
 
@@ -140,15 +144,15 @@ Note: status bar may only pop up for a few of the files, but all files should ha
 For the remainder of the lab we will be working with the se_fires data set.
 
 Construct a bar chart showing the proportion of different fire causes and store as a ggplot object.
-```{r , eval =F}
-barplot<-ggplot(se_fires)+
+```{r}
+barplot<-ggplot(ca_fires)+
   geom_bar(aes(x=state,fill=stat_cause_descr),position = "fill")+
   theme_classic()
 ```
 
-Construct a bubble plot (like the one from the original Buzzfeed article). Even with the reduced SE dataset the plot will take some time to run and render (~1 min).
-```{r , eval = F}
-plot_template_se <- ggplot(se_fires, aes(y=as.numeric(fire_year))) +
+Construct a bubble plot (like the one from the original Buzzfeed article).
+```{r}
+plot_template_ca <- ggplot(ca_fires, aes(y=as.numeric(fire_year))) +
   geom_hline(yintercept = seq(1992, 2015, by = 1), color = "gray", size = 0.05) +
   scale_size_area(max_size = 10, guide = FALSE) +
   scale_x_date(date_breaks = "months", date_labels = "%b") +
@@ -156,24 +160,24 @@ plot_template_se <- ggplot(se_fires, aes(y=as.numeric(fire_year))) +
   xlab("") +
   ylab("") 
 
-se_bubble<- plot_template_se +
+ca_bubble<- plot_template_ca +
   geom_point(aes(size = fire_size, x = plot_date, color = cause),alpha=0.7)
 
 ```
 
-Facet wrap by state:
+Facet wrap by cause:
 ```{r , eval = F}
-se_bubble +
-  facet_wrap(.~state)
+ca_bubble +
+  facet_wrap(.~cause)
 ```
 
 Summarize data and add some variables to plot time series.
 ```{r , eval = F}
 #add new column fire_month
-se_fires <- se_fires %>% mutate(fire_month = month(date))
+ca_fires <-ca_fires %>% mutate(fire_month = month(date))
 
 #summarize by state by month and year
-se_fires_month <- se_fires %>%
+ca_fires_month <- ca_fires %>%
   group_by(state, fire_month, fire_year) %>%
   summarise(area = sum(fire_size), n_fires = n())
 
@@ -183,14 +187,14 @@ se_fires_month <- mutate(se_fires_month, mdate = make_date(fire_year,fire_month)
 
 Fire size time series:
 ```{r , eval = F}
-time_series_area<- ggplot(data = se_fires_month, aes (x = mdate))+
-  geom_line(aes(y = area, col = state))
+time_series_area<- ggplot(data = ca_fires_month, aes (x = mdate))+
+  geom_line(aes(y = area))
 ```
 
 Fire count time series:
 ```{r , eval = F}
-time_series_firecount <- ggplot(data = se_fires_month, aes (x = mdate))+
-  geom_line(aes(y = n_fires, col = state))
+time_series_firecount <- ggplot(data = ca_fires_month, aes (x = mdate))+
+  geom_line(aes(y = n_fires))
 ```
 
 ##References and Resources
