@@ -13,7 +13,7 @@ The goal of this lab is to explore and visualize wildfire trend data using ggplo
 We recommend using an RStudio Project (File -> New Project... -> New Directory) and create a folder that data and scripts can live.
 
 Prior to the lab session please install required packages (see code below), download the data sets, and setup your working directory or RStudio Project.
-```{r packages , message = F}
+```{r packages , message = F, warning=F}
 # install.packages("ggplot2")
 # install.packages("dplyr")
 # install.packages("readr")
@@ -101,7 +101,10 @@ Note that x = carat and y = price moved up into the ggplot() call. This means th
 
 
 ##Part III: Exploring trends in wildfires
-Next, we will load and filter the data provided by Buzzfeed. This data preparation section will be used in other parts of the lab (plotly, shiny).  
+Next, we will work with the wildfire data used in the Buzzfeed post. We will work to create an image similar to this one featured in the article.
+![Source: Buzzfeed]("/Users/swricci/Documents/gis715_geovis/buzzfeed_cafire.png")
+
+To start, load and filter the data. This data preparation section will be used in other parts of the lab (plotly, shiny).  
 ```{r data.prep , eval = F}
 files <- list.files("data/us_fires") #change path if not working in project or directory with data folder
 
@@ -141,13 +144,17 @@ ca_fires<-ca_fires %>%
 
 Note: status bar may only pop up for a few of the files, but all files should have been processed.
 
-For the remainder of the lab we will be working with the se_fires data set.
+For the remainder of the lab we will be working with the just the ca_fires dataset.
 
 Construct a bar chart showing the proportion of different fire causes and store as a ggplot object.
 ```{r}
 barplot<-ggplot(ca_fires)+
   geom_bar(aes(x=state,fill=stat_cause_descr),position = "fill")+
   theme_classic()
+
+
+ggplot(data = ca_fires)+
+  geom_bar(aes(x = fire_month, fill = cause))
 ```
 
 Construct a bubble plot (like the one from the original Buzzfeed article).
@@ -167,12 +174,19 @@ ca_bubble<- plot_template_ca +
 
 Facet wrap by cause:
 ```{r , eval = F}
-ca_bubble +
+plot_template_ca +
+  geom_point(aes(size = fire_size, x = plot_date,color = cause),alpha=0.7)+
   facet_wrap(.~cause)
 ```
 
 Summarize data and add some variables to plot time series.
 ```{r , eval = F}
+
+ggplot(data = ca_fires)+
+  geom_line(aes(x = date, y = fire_size))+
+  scale_x_date(date_breaks = "years", date_labels = "%_Y")+
+  theme_classic()
+
 #add new column fire_month
 ca_fires <-ca_fires %>% mutate(fire_month = month(date))
 
