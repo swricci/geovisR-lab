@@ -1,16 +1,16 @@
 ---
 title: "ggplot(ly) in R lab"
+author: "Shannon Ricci & Nikki Inglis"
+date: "April 15, 2019"
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
   rmarkdown::render(input_file,
  encoding=encoding,
  output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
-author: "Shannon Ricci & Nikki Inglis"
-date: "April 15, 2019"
 output:
-  html_document: default
-  word_document: default
   pdf_document: default
+  word_document: default
+  html_document: default
 ---
 
 The goal of this lab is to explore and visualize wildfire trend data using ggplot, plotly, and shiny. Parts of this lab are based on this [Jul. 28, 2018 BuzzFeed News post on wildfires](https://www.buzzfeednews.com/article/peteraldhous/california-wildfires-people-climate). The code and data to make the plots can be found in [this GitHub repository](https://github.com/BuzzFeedNews/2018-07-wildfire-trends).
