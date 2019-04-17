@@ -8,8 +8,6 @@ knit: (function(input_file, encoding) {
  encoding=encoding,
  output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 output:
-  pdf_document: default
-  word_document: default
   html_document: default
 ---
 
@@ -36,6 +34,10 @@ library(plotly)
 ```
 
 ##Part I: Data visualization with ggplot2
+ggplots are built in layers. The only required components are: the initial ggplot() call and a geom() call with aesthetic (aes()) properties. Refer to the ggplot2 cheat sheet at https://ggplot2.tidyverse.org/ for more information on different functions. 
+Below is an overview of the different categories of functions used to make ggplots:
+
+![Structure of a ggplot](ggplot_structure.png)
 
 ####Base plot vs. ggplot
 To explore the functionality of ggplot, we will use the included diamonds data set and compare simple plots made with base plotting and ggplot. First, look at the structure of the data to see what types of variables we are working with.
@@ -209,6 +211,7 @@ Now on to plotly!
 ***
 
 ##Part III: Plotly in R - Extending ggplotly!
+**Note: RStudio may crash** without warning when interacting with Plotly elements in the RStudio view. If this happens, reopen RStudio and reload the libraries and data. If it continues to happen, limit your interaction with Plotly elements in RStudio and use instead the web-publishing option, api_create() described in the animation portion of this section. You may also try updating to a newer version of RStudio, which reportedly fixes the issue. 
 
 Use the filtered ca_fires dataset to remake the bubble regime chart. 
 ```{r}
@@ -247,9 +250,10 @@ plot_template_ca <- ggplot(ca_fires, aes(y=as.numeric(fire_year))) +
   ylab("")
 
 ca_bubble3 <- plot_template_ca +
-  geom_point(aes(size = fire_size, x = plot_date, color = cause, group = 1, text=paste('Name:', mtbs_fire_name, '<br>Cause:', cause, '<br>Duration:', duration_days, "days")), alpha=0.7)
+  geom_point(aes(size = fire_size, x = plot_date, color = cause, group = 1, text=paste('Name:', mtbs_fire_name, '<br>Cause:', cause, '<br>Duration:', duration_days, "days", '<br>Descr:', stat_cause_descr)), alpha=0.7)
 
 g<-ggplotly(ca_bubble3, tooltip = "text", dynamicTicks = T)
+#g<-ggplotly(ca_bubble3, tooltip = "text")
 g
 ```
 
@@ -265,7 +269,7 @@ In your online plot.ly account you'll find a tab with your API keys. Set them in
 
 ```{r, echo = F}
 Sys.setenv("plotly_username"="swricci")
-Sys.setenv("plotly_api_key"="CJVOqxdS1uvbjfsqBZ4J")
+Sys.setenv("plotly_api_key"="LJSpcq9tYuOX9ucM31lv")
 ```
 
 ```{r eval = F}
@@ -290,8 +294,9 @@ Api_create() should create a web-based animation accessible via your plot.ly acc
 ```{r, eval=F}
 g %>%
   animation_opts(1000, transition=500, easing="linear")
-chart_link = api_create(a, filename="plotly-lab-an")
+chart_link = api_create(g, filename="plotly-lab-an")
 chart_link
+
 ```
 
 
