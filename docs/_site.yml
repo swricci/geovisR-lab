@@ -1,0 +1,8 @@
+name: "ggplot lab & viz"
+navbar:
+  title: "My Website"
+  left:
+    - text: "ggplot(ly) lab"
+      href: index.html
+    - text: "Final viz"
+      href: finalviz.html
