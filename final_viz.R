@@ -54,4 +54,10 @@ SPL.map<-ggplot()+
     x = "Longitude"
   )
 
-ggplotly(SPL.map, tooltip = "text")
+g<-ggplotly(SPL.map, tooltip = "text")
+
+Sys.setenv("plotly_username"="swricci")
+Sys.setenv("plotly_api_key"="LJSpcq9tYuOX9ucM31lv")
+
+chart_link = api_create(g, filename="FKNMS-vessel-vis")
+chart_link
