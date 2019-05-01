@@ -1,2 +1,2 @@
 # geovisR-lab
-materials for geovisualization student-led lab
+materials for Geovisualization student-led lab & final visualization product
