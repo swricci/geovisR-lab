@@ -18,6 +18,8 @@ output: html_document
 library(sf)
 library(raster)
 library(ggplot2)
+library(ggspatial)
+library(ggmap)
 library(plotly)
 
 #data preperation
@@ -44,14 +46,16 @@ fl.keys<-st_transform(states_crop,4326)
 boat_df<-as.data.frame(boatSPL_proj,xy=T)
 colnames(boat_df)<-c("x","y","SPL")
 
-SPL.map<-ggplot()+
-  geom_raster(data=boat_df, aes(x=x,y=y,fill = SPL,text=paste('SPL (dB):', round(SPL,2))))+
-  scale_fill_viridis_c(option = "magma")+
-  geom_sf(data=fknms, aes(text=Name),color = "black",fill="gray",alpha=0.6)+
-  geom_sf(data=fl.keys, color = "black", fill="darkolivegreen4")+
-  #coord_sf()+
-  #theme_dark()+
-  #theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+
+register_google(key='AIzaSyBwCEF31xRcLcLFZpRnOyXXSjGWYjCXf0E')
+
+basemap <- ggmap(get_map(location = c(lon = -81.6, lat = 24.5),
+                    zoom = 9, scale = 1,
+                    maptype ='satellite'))
+
+SPL.map<- basemap + geom_raster(data=boat_df, aes(x=x,y=y,fill = SPL,text=paste('SPL (dB):', round(SPL,2))),alpha = 0.8, inherit.aes = F)+
+  scale_fill_viridis_c(option = "magma",na.value="transparent")+
+  geom_sf(data=fknms, aes(text=Name),color = "black",fill="gray",alpha=0.6,inherit.aes = FALSE)+
   theme_classic()+
   labs(
     title = "Vessel noise propagation in FKNMS",
@@ -62,8 +66,8 @@ SPL.map<-ggplot()+
 g<-ggplotly(SPL.map, tooltip = "text")
 
 ```
-```{r, message =F, echo=F, warning=F}
 
+```{r, message =F, echo=F, warning=F}
 g
 
 ```
