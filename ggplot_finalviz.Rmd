@@ -47,14 +47,14 @@ boat_df<-as.data.frame(boatSPL_proj,xy=T)
 colnames(boat_df)<-c("x","y","SPL")
 
 
-register_google(key='AIzaSyBwCEF31xRcLcLFZpRnOyXXSjGWYjCXf0E')
+register_google(key='')
 
 basemap <- ggmap(get_map(location = c(lon = -81.6, lat = 24.5),
                     zoom = 9, scale = 1,
                     maptype ='satellite'))
 
-SPL.map<- basemap + geom_raster(data=boat_df, aes(x=x,y=y,fill = SPL,text=paste('SPL (dB):', round(SPL,2))),alpha = 0.8, inherit.aes = F)+
-  scale_fill_viridis_c(option = "magma",na.value="transparent")+
+SPL.map<- basemap + geom_raster(data=boat_df, aes(x=x,y=y,fill = SPL,text=paste('SPL (dB):', round(SPL,2))), inherit.aes = F)+
+  scale_fill_viridis_c(option = "magma",na.value="transparent",alpha = 0.6)+
   geom_sf(data=fknms, aes(text=Name),color = "black",fill="gray",alpha=0.6,inherit.aes = FALSE)+
   theme_classic()+
   labs(
@@ -63,7 +63,8 @@ SPL.map<- basemap + geom_raster(data=boat_df, aes(x=x,y=y,fill = SPL,text=paste(
     x = "Longitude"
   )
 
-g<-ggplotly(SPL.map, tooltip = "text")
+g<-ggplotly(SPL.map, tooltip = "text") #set height and width? adjust white space inside axes
+#transparency???
 
 ```
 
@@ -121,7 +122,7 @@ plot(st_geometry(fknms_zones),add=T)
 plot(st_geometry(states),add=T)
 ```
 
-Final ggplotly object. The plot is built with three data layers: raster with sound levels, the state shapefile and the FKNMS zones shapefile. 
+Draft ggplotly object. The plot is built with three data layers: raster with sound levels, the state shapefile and the FKNMS zones shapefile. 
 ```{r, message =F, warning=F,eval=F}
 SPL.map<-ggplot()+
   geom_raster(data=boat_df, aes(x=x,y=y,fill = SPL,text=paste('SPL (dB):', round(SPL,2))))+
@@ -140,3 +141,4 @@ SPL.map<-ggplot()+
 ggplotly(SPL.map, tooltip = "text")
 ```
 
+Based on feedback, decided to add a basemap tile of satellite imagery. This gives more context to where the location is within the Florida Keys and provides some local bathymetry information. Bathymetry is an important factor when considering noise propagation so including this in the visualization should help with understanding the results.
