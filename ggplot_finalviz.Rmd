@@ -9,7 +9,7 @@ knit: (function(input_file, encoding) {
  output_file=file.path(dirname(input_file), out_dir, 'finalviz.html'))})
 output: html_document
 ---
-
+##How far does sound propagate from a boat traveling in the Florida Keys?
 
 ```{r, message =F, echo=F, warning=F, include=F}
 #final viz product
@@ -23,56 +23,57 @@ library(ggmap)
 library(plotly)
 
 #data preperation
-states<-st_read("/Users/swricci/Documents/gis711_database/US/states_48.shp")
-states_reproj<-st_transform(states,32617)
-
 fknms_zones<-st_read("/Users/swricci/Documents/gis714_geocomp/dBSea_results/FKNMS_marine_zones.shp")
 fknms_reproj<-st_transform(fknms_zones,32617)
 
-boatSPL<-raster("passenger_captblinky_vislevelsSPL.asc")
+boat_path<-st_read("data/passenger_captblinky_trackline.shp")
+st_crs(boat_path)<-32617
+boat_path<-st_transform(boat_path,4326)
+
+boatSPL<-raster("data/passenger_captblinky_vislevelsSPL.asc")
 crs(boatSPL)<-CRS("+init=epsg:32617")
 boatSPL_proj<-projectRaster(boatSPL,crs=CRS("+init=epsg:4326"))
 
 #get data ready to plot
-studyarea<-st_bbox(c(xmin= 24.31, ymin= -82.25, xmax= 24.73,ymax= -80.75),crs = st_crs(4326))
+studyarea<-st_bbox(c(xmin= 24.31, ymin= -82.25, xmax= 24.73,ymax= -80.75),
+                   crs = st_crs(4326))
 studyarea_proj<-extent(boatSPL)
 
 fknms_crop<-st_crop(fknms_reproj,studyarea_proj)
 fknms<-st_transform(fknms_crop,4326)
 
-states_crop<-st_crop(states_reproj,studyarea_proj)
-fl.keys<-st_transform(states_crop,4326)
-
 boat_df<-as.data.frame(boatSPL_proj,xy=T)
 colnames(boat_df)<-c("x","y","SPL")
 
-
-register_google(key='')
+#register_google(key='')
 
 basemap <- ggmap(get_map(location = c(lon = -81.6, lat = 24.5),
                     zoom = 9, scale = 1,
                     maptype ='satellite'))
 
-SPL.map<- basemap + geom_raster(data=boat_df, aes(x=x,y=y,fill = SPL,text=paste('SPL (dB):', round(SPL,2))), inherit.aes = F)+
-  scale_fill_viridis_c(option = "magma",na.value="transparent",alpha = 0.6)+
-  geom_sf(data=fknms, aes(text=Name),color = "black",fill="gray",alpha=0.6,inherit.aes = FALSE)+
-  theme_classic()+
+SPL.map<- basemap + 
+  geom_raster(data=boat_df, 
+              aes(x=x,y=y,fill = SPL,text=paste('SPL (dB):', round(SPL,2))), 
+              inherit.aes = F) +
+  scale_fill_viridis_c(option = "magma",na.value="transparent",alpha = 0.8) +
+  geom_sf(data=boat_path, color = "black",linetype = "dotted", alpha = 0.6, 
+          inherit.aes = F) + 
+  geom_sf(data=fknms, aes(text=Name),color = "black",fill="white",alpha=0.6,
+          inherit.aes = FALSE) +
+  theme_classic() +
   labs(
     title = "Vessel noise propagation in FKNMS",
     y = "Latitude",
     x = "Longitude"
   )
 
-g<-ggplotly(SPL.map, tooltip = "text") #set height and width? adjust white space inside axes
-#transparency???
-
+g<-ggplotly(SPL.map, tooltip = "text") 
 ```
 
 ```{r, message =F, echo=F, warning=F}
 g
 
 ```
-
 
 For my final visualization product I used ggplot and plotly (ggplotly) to create an interactive visualization of vessel noise propagation model results.
 
@@ -83,10 +84,12 @@ library(sf)
 library(raster)
 library(ggplot2)
 library(plotly)
+library(ggmap)
 ```
 
-Prepare data. Set projections, crop layers to extent of raster.
-```{r, message =F, warning=F,eval=F}
+##Prepare data. 
+Set projections, crop layers to extent of raster.
+```{r, message =F, warning=F}
 #data preperation
 
 #state outline shapefile
@@ -98,7 +101,7 @@ fknms_zones<-st_read("/Users/swricci/Documents/gis714_geocomp/dBSea_results/FKNM
 fknms_reproj<-st_transform(fknms_zones,32617)
 
 #Noise propagation model results
-boatSPL<-raster("passenger_captblinky_vislevelsSPL.asc")
+boatSPL<-raster("data/passenger_captblinky_vislevelsSPL.asc")
 crs(boatSPL)<-CRS("+init=epsg:32617")
 boatSPL_proj<-projectRaster(boatSPL,crs=CRS("+init=epsg:4326"))
 
@@ -115,16 +118,17 @@ boat_df<-as.data.frame(boatSPL_proj,xy=T)
 colnames(boat_df)<-c("x","y","SPL")
 ```
 
-baseplot comparison:
+##Baseplot comparison:
 ```{r, message =F, warning=F}
 plot(boatSPL_proj)
 plot(st_geometry(fknms_zones),add=T)
 plot(st_geometry(states),add=T)
 ```
 
-Draft ggplotly object. The plot is built with three data layers: raster with sound levels, the state shapefile and the FKNMS zones shapefile. 
-```{r, message =F, warning=F,eval=F}
-SPL.map<-ggplot()+
+##Draft ggplotly object. 
+The plot is built with three data layers: raster with sound levels, the state shapefile and the FKNMS zones shapefile. 
+```{r, message =F, warning=F}
+draft<-ggplot()+
   geom_raster(data=boat_df, aes(x=x,y=y,fill = SPL,text=paste('SPL (dB):', round(SPL,2))))+
   scale_fill_viridis_c(option = "magma")+
   geom_sf(data=fknms, aes(text=Name),color = "white",fill="gray",alpha=0.6)+
@@ -138,7 +142,65 @@ SPL.map<-ggplot()+
     x = "Longitude"
   )
 
+ggplotly(draft, tooltip = "text")
+```
+
+Based on feedback, decided to add a basemap tile of satellite imagery. The easiest way to do this was to use the ggmap package. ggmap is a package that extends spatial visualization using ggplot2. This required setting up a [Google Maps API](https://cloud.google.com/maps-platform/) to use the google satellite or other base maps.
+
+Addition of the basemap gives more context to where the location is within the Florida Keys and provides some local bathymetry information. Bathymetry is an important factor when considering noise propagation so including this in the visualization should help with understanding the results. I also added the track line for the modeled vessel track. I decided to make the line dotted so that you can still see the sound levels under the track.
+```{r, message =F, warning=F}
+library(sf)
+library(raster)
+library(ggplot2)
+library(ggmap)
+library(plotly)
+library(ggmap)
+
+#data preperation
+fknms_zones<-st_read("/Users/swricci/Documents/gis714_geocomp/dBSea_results/FKNMS_marine_zones.shp")
+fknms_reproj<-st_transform(fknms_zones,32617)
+
+boat_path<-st_read("data/passenger_captblinky_trackline.shp")
+st_crs(boat_path)<-32617
+boat_path<-st_transform(boat_path,4326)
+
+boatSPL<-raster("data/passenger_captblinky_vislevelsSPL.asc")
+crs(boatSPL)<-CRS("+init=epsg:32617")
+boatSPL_proj<-projectRaster(boatSPL,crs=CRS("+init=epsg:4326"))
+
+#get data ready to plot
+studyarea<-st_bbox(c(xmin= 24.31, ymin= -82.25, xmax= 24.73,ymax= -80.75),crs = st_crs(4326))
+studyarea_proj<-extent(boatSPL)
+
+fknms_crop<-st_crop(fknms_reproj,studyarea_proj)
+fknms<-st_transform(fknms_crop,4326)
+
+boat_df<-as.data.frame(boatSPL_proj,xy=T)
+colnames(boat_df)<-c("x","y","SPL")
+
+#register_google(key='')
+
+basemap <- ggmap(get_map(location = c(lon = -81.6, lat = 24.5),
+                    zoom = 9, scale = 1,
+                    maptype ='satellite'))
+
+SPL.map<- basemap + 
+  geom_raster(data=boat_df, 
+              aes(x=x,y=y,fill = SPL,text=paste('SPL (dB):', round(SPL,2))), 
+              inherit.aes = F) +
+  scale_fill_viridis_c(option = "magma",na.value="transparent",alpha = 0.8) +
+  geom_sf(data=boat_path, color = "black",linetype = "dotted", alpha = 0.6, 
+          inherit.aes = F) + 
+  geom_sf(data=fknms, aes(text=Name),color = "black",fill="white",alpha=0.6,
+          inherit.aes = FALSE) +
+  theme_classic() +
+  labs(
+    title = "Vessel noise propagation in FKNMS",
+    y = "Latitude",
+    x = "Longitude"
+  )
+
 ggplotly(SPL.map, tooltip = "text")
 ```
 
-Based on feedback, decided to add a basemap tile of satellite imagery. This gives more context to where the location is within the Florida Keys and provides some local bathymetry information. Bathymetry is an important factor when considering noise propagation so including this in the visualization should help with understanding the results.
+While ggmap allows for greater spatial visualization capabilities, there are some issues using ggmap basemaps and sf objects. The easiest fix for this was to add the inherit.aes = F for all the data layers plotted on top of the basemap.
