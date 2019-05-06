@@ -9,8 +9,10 @@ knit: (function(input_file, encoding) {
  output_file=file.path(dirname(input_file), out_dir, 'finalviz.html'))})
 output: html_document
 ---
+
 ##How far does sound propagate from a boat traveling in the Florida Keys?
 
+The visualization below shows the predicted sound levels from a single boat traveling in the Florida Keys. The boat track modeled is shown in black, the sound levels are shown in color, and the boundaries of the Florida National Marine Sanctuaries are shown in light gray. When the mouse moves over the figure, a pop-up will show information on the name of the reserve (if mouse is over the reserve) or the SPL (received sound level) in the current cell. Use this visualization to explore how sound propagates in this area, and whether certain reserves are receiving noise levels above levels that could impact marine animals (90 dB).
 ```{r, message =F, echo=F, warning=F, include=F}
 #final viz product
 #use ggplot and interaction with plotly to visuzalize noise propagation model results
