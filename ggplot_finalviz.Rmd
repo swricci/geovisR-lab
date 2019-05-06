@@ -147,6 +147,8 @@ draft<-ggplot()+
 ggplotly(draft, tooltip = "text")
 ```
 
+
+##Final ggplotly visualization
 Based on feedback, decided to add a basemap tile of satellite imagery. The easiest way to do this was to use the ggmap package. ggmap is a package that extends spatial visualization using ggplot2. This required setting up a [Google Maps API](https://cloud.google.com/maps-platform/) to use the google satellite or other base maps.
 
 Addition of the basemap gives more context to where the location is within the Florida Keys and provides some local bathymetry information. Bathymetry is an important factor when considering noise propagation so including this in the visualization should help with understanding the results. I also added the track line for the modeled vessel track. I decided to make the line dotted so that you can still see the sound levels under the track.
